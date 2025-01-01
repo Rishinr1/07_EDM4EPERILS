@@ -121,9 +121,34 @@ unpivoted_df = unpivoted_df.with_columns([
 
 # In[294]:
 
+import pyodbc
 
-print(unpivoted_df)
+# Define the public variable
+accgrp_id = None
 
+# Database connection parameters
+server = 'localhost'
+database = sample_database_name
+connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};Trusted_Connection=yes;'
+
+# Connect to the database
+conn = pyodbc.connect(connection_string)
+cursor = conn.cursor()
+
+# Query the accgrp table to get the ACCGRPID of the first row
+cursor.execute("SELECT ACCGRPID FROM accgrp")
+row = cursor.fetchone()
+
+# Assign the value to the public variable
+if row:
+    accgrp_id = row.ACCGRPID
+
+# Close the connection
+cursor.close()
+conn.close()
+
+# Print the value (for verification)
+print(f"ACCGRPID: {accgrp_id}")
 
 # In[295]:
 
@@ -522,7 +547,7 @@ unspecified_column_behavior = {
             "USERBFE": "-999",
             "CREATEDATETIME": undate,
             "UPDATEDATETIME": undate,
-            "ACCGRPID": "1",
+            "ACCGRPID": accgrp_id,
             'OTHERZONE':currency,
             
         },
