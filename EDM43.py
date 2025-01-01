@@ -141,7 +141,7 @@ row = cursor.fetchone()
 
 # Assign the value to the public variable
 if row:
-    accgrp_id = row.ACCGRPID
+    accgrp_id = int(row.ACCGRPID)
 
 # Close the connection
 cursor.close()
@@ -453,6 +453,7 @@ print("Data population completed in Address table.")
 
 import pyodbc
 import polars as pl
+table_name="Property"
 
 # Class to manage SQL connection
 class SQLConnection:
@@ -474,7 +475,6 @@ class SQLConnection:
 
     def execute(self, sql_command):
         try:
-            #print(f"Executing SQL Command: {sql_command}")
             self.cursor.execute(sql_command)
             self.connection.commit()
         except Exception as e:
@@ -518,22 +518,21 @@ def get_foreign_key_columns(cursor, table_name):
 # Server details
 server = "localhost"
 
+# Table mappings and behavior for unspecified columns
 table_mappings = {
-    "property": {"LOCNUM":"LOCNUM","LOCNAME":"LOCNUM",
-                 "BLDGSCHEME":"BLDGSCHEME","OCCSCHEME":"OCCSCHEME","BLDGSCHEME" :"BLDGSCHEME",
-                 "OCCTYPE":"OCCTYPE",
-                 "OCCTYPE":"OCCTYPE","NUMBLDGS":"NUMBLDGS","NUMSTORIES":"NUMSTORIES"},
-    
+    "property": {
+        "LOCNUM": "LOCNUM", "LOCNAME": "LOCNUM",
+        "BLDGSCHEME": "BLDGSCHEME", "OCCSCHEME": "OCCSCHEME",
+        "OCCTYPE": "OCCTYPE", "NUMBLDGS": "NUMBLDGS", "NUMSTORIES": "NUMSTORIES"
+    },
 }
-
-# Define behavior for unspecified columns
 unspecified_column_behavior = {
     "property": {
-        "default": "0",  # General default value for unspecified columns
-        "null_columns": [],  # Columns where value should be NULL
-        "blank_columns": ['USERID1', 'USERID2', 'USERTXT1', 'USERTXT2', 'SITENAME', 'FLOOROCCUPANCY','HUZONE'],  # Columns where value should be a blank space
-        "zero_columns": [],  # Columns where value should be 0
-        "specific_defaults": {  # Columns with specific default values
+        "default": "0",
+        "null_columns": [],
+        "blank_columns": ['USERID1', 'USERID2', 'USERTXT1', 'USERTXT2', 'SITENAME', 'FLOOROCCUPANCY', 'HUZONE'],
+        "zero_columns": [],
+        "specific_defaults": {
             "YEARBUILT": undate,
             "INCEPTDATE": Idate,
             "EXPIREDATE": Edate,
@@ -548,29 +547,30 @@ unspecified_column_behavior = {
             "CREATEDATETIME": undate,
             "UPDATEDATETIME": undate,
             "ACCGRPID": accgrp_id,
-            'OTHERZONE':currency,
-            
+            "OTHERZONE": currency,
         },
     },
 }
 
-# Counter for AddressID, LOCID, and PRIMARYLOCID
+# Counter initialization
 address_id_counter = 4
-loc_id_counter = 4  # Initialize LOCID counter
-primary_id_counter = 4  # Initialize PRIMARYLOCID counter
+loc_id_counter = 4
+primary_id_counter = 4
 
-# Assume df and created_databases are defined elsewhere
-# Split the DataFrame into chunks
+# Assume df and new_databases are defined elsewhere
 chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
 # Open the SQL connection once
-sql_conn = SQLConnection(server, created_databases[0])
+sql_conn = SQLConnection(server, new_databases[0])
 sql_conn.open()
+
+# Flag to handle the first database ACCGRPID logic
+is_first_database = True
 
 # Populate each chunk into the corresponding database
 for i, chunk in enumerate(chunks):
-    if i < len(created_databases):
-        database = created_databases[i]
+    if i < len(new_databases):
+        database = new_databases[i]
         print(f"Populating database: {database}")
 
         # Switch database if necessary
@@ -580,7 +580,7 @@ for i, chunk in enumerate(chunks):
             sql_conn.open()
 
         # Delete existing rows from the Property table
-        sql_conn.execute("DELETE FROM Property ")
+        sql_conn.execute("DELETE FROM Property")
         print(f"All rows deleted from Property table in database {database}.")
 
         for row in chunk.iter_rows(named=True):
@@ -590,23 +590,30 @@ for i, chunk in enumerate(chunks):
 
                 mapped_columns = []
                 mapped_values = []
+                added_columns = set()  # Track already added columns to avoid duplicates
 
-                # Add mapped columns from the DataFrame
                 for table_col in all_columns:
+                    if table_col in added_columns:
+                        continue  # Skip duplicate columns
+
                     if table_col == 'AddressID':
                         mapped_columns.append(table_col)
                         mapped_values.append(f"{address_id_counter}")
+                        added_columns.add(table_col)
                     elif table_col == 'LOCID':
                         mapped_columns.append(table_col)
                         mapped_values.append(f"{loc_id_counter}")
+                        added_columns.add(table_col)
                     elif table_col == 'PRIMARYLOCID':
                         mapped_columns.append(table_col)
                         mapped_values.append(f"{primary_id_counter}")
+                        added_columns.add(table_col)
                     elif table_col in column_mapping:
                         df_col = column_mapping[table_col]
                         if df_col in row:
                             mapped_columns.append(table_col)
                             mapped_values.append(f"'{row[df_col]}'")
+                            added_columns.add(table_col)
                     elif table_col not in foreign_key_columns:
                         default_behavior = unspecified_column_behavior.get(table_name, {"default": "0"})
                         null_columns = default_behavior.get("null_columns", [])
@@ -624,32 +631,45 @@ for i, chunk in enumerate(chunks):
                             mapped_columns.append(table_col)
                             mapped_values.append("0")
                         elif table_col in specific_defaults:
-                            mapped_columns.append(table_col)
-                            mapped_values.append(f"'{specific_defaults[table_col]}'")
+                            if table_col == "ACCGRPID":
+                                if is_first_database:
+                                    mapped_columns.append(table_col)
+                                    mapped_values.append("1")
+                                else:
+                                    mapped_columns.append(table_col)
+                                    mapped_values.append(f"'{specific_defaults[table_col]}'")
                         else:
                             mapped_columns.append(table_col)
                             mapped_values.append(default_behavior.get("default", "0"))
 
-                # Increment the AddressID, LOCID, and PRIMARYLOCID counters
+                        added_columns.add(table_col)  # Add to the set of processed columns
+
+                # Increment counters for relevant columns
                 if 'AddressID' in mapped_columns:
                     address_id_counter += 1
                 if 'LOCID' in mapped_columns:
                     loc_id_counter += 1
                 if 'PRIMARYLOCID' in mapped_columns:
                     primary_id_counter += 1
+                table_name = "Property"
 
-                # Ensure the number of columns matches the number of values
+                # Execute SQL command if columns and values match
                 if len(mapped_columns) == len(mapped_values):
                     sql_command = f"INSERT INTO {table_name} ({', '.join(mapped_columns)}) VALUES ({', '.join(mapped_values)})"
                     sql_conn.execute(sql_command)
                 else:
                     print("Mismatch in columns and values, skipping row.")
+                    print(f"Columns: {mapped_columns}")
+                    print(f"Values: {mapped_values}")
+
+        # Update the first database flag
+        is_first_database = False
 
 # Close the SQL connection after everything is completed
 sql_conn.close()
-print(sql_command)
 
 print("Data population completed in Property table.")
+
 
 
 # In[301]:
