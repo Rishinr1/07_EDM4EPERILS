@@ -20,13 +20,16 @@ import polars as pl
 
 
 # Read the CSV file using Polars
-df = pl.read_csv("input\THFL_SAMPLE_6.csv", separator='\t') # give the location file path here
+inputfile = input("Enter the location of the input file ")
+#"input\THEQ_SAMPLE_6.csv"
+df = pl.read_csv(inputfile, separator='\t') # give the location file path here
+print(df)
 perilno=int(input(" Enter the peril number you are going to run "))
 currency="USD"
 undate = "9999-12-31 00:00:00"
 Idate = "12/3/2024 12:00:00 AM"
 Edate = "12/2/2025 12:00:00 AM"
-sample_database_name = input ("enter the name of sample database")
+sample_database_name = input ("Enter the name of sample database created using RL : ")
 
 
 

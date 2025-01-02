@@ -7,8 +7,9 @@
 
 
 # 1 ) First Create a BLANK EDM in RISK LINK and import a sample MRI file according to the peril
-# 2) Give the name of sample EDM in datbase ( )
-# 3)Run the script
+#2)Run the script
+# 3) Give the name of perilno, sample EDM in datbase and number of split needed
+ 
 
 # In[291]:
 
@@ -20,13 +21,16 @@ import polars as pl
 
 
 # Read the CSV file using Polars
-df = pl.read_csv("input\THFL_SAMPLE_6.csv", separator='\t') # give the location file path here
-perilno=int(input(" Enter the peril number you are going to run "))
+inputfile = input("Enter the location of the input file ")
+#"input\THEQ_SAMPLE_6.csv"
+df = pl.read_csv(inputfile, separator='\t') # give the location file path here
+print(df)
+perilno=int(input(" Enter the peril number you are going to run :  "))
 currency="USD"
 undate = "9999-12-31 00:00:00"
 Idate = "12/3/2024 12:00:00 AM"
 Edate = "12/2/2025 12:00:00 AM"
-sample_database_name = input ("enter the name of sample database")
+sample_database_name = input ("enter the name of sample database: ")
 
 
 
@@ -547,23 +551,20 @@ unspecified_column_behavior = {
             "USERBFE": "-999",
             "CREATEDATETIME": undate,
             "UPDATEDATETIME": undate,
-            "ACCGRPID": accgrp_id,
+            "ACCGRPID": "1",
             'OTHERZONE':currency,
             
         },
     },
 }
 
-# Counter for AddressID, LOCID, and PRIMARYLOCID
 address_id_counter = 4
 loc_id_counter = 4  # Initialize LOCID counter
 primary_id_counter = 4  # Initialize PRIMARYLOCID counter
 
-# Assume df and created_databases are defined elsewhere
 # Split the DataFrame into chunks
 chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
-# Open the SQL connection once
 sql_conn = SQLConnection(server, created_databases[0])
 sql_conn.open()
 
@@ -573,7 +574,7 @@ for i, chunk in enumerate(chunks):
         database = created_databases[i]
         print(f"Populating database: {database}")
 
-        # Switch database if necessary
+
         if sql_conn.database != database:
             sql_conn.close()
             sql_conn = SQLConnection(server, database)
@@ -758,13 +759,10 @@ unspecified_column_behavior = {
     },
 }
 
-# Counter for AddressID, LOCID, and PRIMARYLOCID
 loccvg_id_counter = 4
 #loc_id_counter_counter = 4
 
 
-# Assume df and created_databases are defined elsewhere
-# Split the DataFrame into chunks
 chunks = [unpivoted_df[i:i + (locations_per_split*3)] for i in range(0, len(unpivoted_df), (locations_per_split*3))]
 
 # Open the SQL connection once
@@ -847,7 +845,6 @@ for i, chunk in enumerate(chunks):
                 else:
                     print("Mismatch in columns and values, skipping row.")
 
-# Close the SQL connection after everything is completed
 sql_conn.close()
 
 print("Data population completed in loccvg table.")
@@ -931,7 +928,6 @@ def get_foreign_key_columns(cursor, table_name):
         print(f"Error fetching foreign key columns for table {table_name}: {e}")
         return []
 
-# Server details
 server = "localhost"
 
 
@@ -957,11 +953,9 @@ if perilno==1:
         },
     }
 
-    # Counter for AddressID, LOCID, and PRIMARYLOCID
     eqdet_counter = 4
-    loc_id_counter = 4  # Initialize LOCID counter
+    loc_id_counter = 4  
 
-    # Assume df and created_databases are defined elsewhere
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
@@ -1412,11 +1406,9 @@ elif perilno==5:
         },
     }
 
-    # Counter for AddressID, LOCID, and PRIMARYLOCID
     frdet_counter = 4
-    loc_id_counter = 4  # Initialize LOCID counter
+    loc_id_counter = 4  
 
-    # Assume df and created_databases are defined elsewhere
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
