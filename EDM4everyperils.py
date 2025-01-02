@@ -15,6 +15,8 @@
 
 
 import polars as pl
+import pyodbc
+
 
 
 # In[292]:
@@ -25,12 +27,11 @@ inputfile = input("Enter the location of the input file ")
 #"input\THEQ_SAMPLE_6.csv"
 df = pl.read_csv(inputfile, separator='\t') # give the location file path here
 print(df)
-perilno=int(input(" Enter the peril number you are going to run :  "))
 currency="USD"
 undate = "9999-12-31 00:00:00"
 Idate = "12/3/2024 12:00:00 AM"
 Edate = "12/2/2025 12:00:00 AM"
-sample_database_name = input ("enter the name of sample database: ")
+sample_database_name = input ("Enter the name of sample database created using RL: ")
 
 
 
@@ -38,6 +39,31 @@ sample_database_name = input ("enter the name of sample database: ")
 
 # In[293]:
 
+# Define the public variable
+perilno = None
+
+# Database connection parameters
+server = 'localhost'
+database = sample_database_name
+connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};Trusted_Connection=yes;'
+
+# Connect to the database
+conn = pyodbc.connect(connection_string)
+cursor = conn.cursor()
+
+cursor.execute("SELECT POLICYTYPE FROM policy")
+row = cursor.fetchone()
+
+# Assign the value to the public variable
+if row:
+    perilno = row.POLICYTYPE
+
+# Close the connection
+cursor.close()
+conn.close()
+
+# Print the value (for verification)
+print(f"POLICYTYPE: {perilno}")
 
 def get_columns_to_unpivot(perilno):
     if perilno == 1:
