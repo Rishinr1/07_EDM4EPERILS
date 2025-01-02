@@ -32,6 +32,108 @@ undate = "9999-12-31 00:00:00"
 Idate = "12/3/2024 12:00:00 AM"
 Edate = "12/2/2025 12:00:00 AM"
 sample_database_name = input ("Enter the name of sample database created using RL: ")
+import subprocess
+
+# Global list to store newly created database names
+new_databases = []
+
+# Function to execute a SQL command using sqlcmd
+def execute_sql_command(server, sql_query):
+    try:
+        subprocess.run(f"sqlcmd -S {server} -Q \"{sql_query}\"", check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"SQL command failed: {e}")
+        raise
+
+# Function to drop a database if it exists and has a specific extension
+def drop_database_if_exists(server, database_name):
+    try:
+        if "_" in database_name:
+            drop_query = f"IF EXISTS (SELECT name FROM sys.databases WHERE name = '{database_name}') DROP DATABASE [{database_name}]"
+            execute_sql_command(server, drop_query)
+            print(f"Database '{database_name}' dropped successfully if it existed.")
+    except Exception as e:
+        print(f"Error dropping database {database_name}: {e}")
+
+# Function to copy a database
+def copy_database(server, original_database_name, new_database_name, split_number):
+    """
+    Copies a database on the specified SQL Server instance by performing a backup and restore operation.
+    """
+    try:
+        print(f"Copying database: {original_database_name} to {new_database_name}")
+
+        # Drop the new database if it already exists and has an extension
+        drop_database_if_exists(server, new_database_name)
+
+        # Define paths for backup and new database files
+        backup_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\\MSSQL13.MSSQLSERVER\\MSSQL\\Backup\\{original_database_name}_{split_number}.bak"
+        data_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}.mdf"
+        log_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}_log.ldf"
+
+        # Backup the original database
+        backup_query = f"BACKUP DATABASE [{original_database_name}] TO DISK = '{backup_file}'"
+        execute_sql_command(server, backup_query)
+
+        # Restore the database with a new name
+        restore_query = (
+            f"RESTORE DATABASE [{new_database_name}] FROM DISK = '{backup_file}' "
+            f"WITH MOVE '{original_database_name}' TO '{data_file}', "
+            f"MOVE '{original_database_name}_log' TO '{log_file}'"
+        )
+        execute_sql_command(server, restore_query)
+
+        print(f"Database '{new_database_name}' created successfully.")
+        new_databases.append(new_database_name)
+
+    except Exception as e:
+        print("Error during database copy operation:", e)
+        
+# Function to count rows in the DataFrame
+def count_rows_in_dataframe(df):
+    return len(df)
+
+# Function to split and create databases
+def split_and_create_databases(df, server, original_database_name, locations_per_split):
+    """
+    Creates multiple database copies based on the number of rows in the DataFrame and the user-defined split size.
+    """
+    try:
+        total_rows = count_rows_in_dataframe(df)
+        print(f"Total rows in the dataset: {total_rows}")
+
+        # Determine the number of splits required
+        num_splits = (total_rows + locations_per_split - 1) // locations_per_split
+        print(f"Number of splits required: {num_splits}")
+
+        # Create the necessary database copies
+        for i in range(1, num_splits + 1):
+            new_database_name = f"{original_database_name}_{i}"
+            copy_database(server, original_database_name, new_database_name, i)
+
+        return new_databases
+
+    except Exception as e:
+        print("An error occurred while splitting and creating databases:", e)
+        return []
+
+# Main execution
+if __name__ == "__main__":
+    # User inputs and initial setup
+    try:
+        server = "localhost"
+        database_name = sample_database_name
+        locations_per_split = int(input("Enter the number of locations wanted in one split: "))
+        # Create database copies
+        created_databases = split_and_create_databases(df, server, database_name, locations_per_split)
+
+        # Print the results
+        print("Created Databases:", created_databases)
+
+    except ValueError:
+        print("Invalid input. Please enter numeric values for the split size.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 
 
@@ -183,108 +285,7 @@ print(f"ACCGRPID: {accgrp_id}")
 # In[295]:
 
 
-import subprocess
 
-# Global list to store newly created database names
-new_databases = []
-
-# Function to execute a SQL command using sqlcmd
-def execute_sql_command(server, sql_query):
-    try:
-        subprocess.run(f"sqlcmd -S {server} -Q \"{sql_query}\"", check=True, shell=True)
-    except subprocess.CalledProcessError as e:
-        print(f"SQL command failed: {e}")
-        raise
-
-# Function to drop a database if it exists and has a specific extension
-def drop_database_if_exists(server, database_name):
-    try:
-        if "_" in database_name:
-            drop_query = f"IF EXISTS (SELECT name FROM sys.databases WHERE name = '{database_name}') DROP DATABASE [{database_name}]"
-            execute_sql_command(server, drop_query)
-            print(f"Database '{database_name}' dropped successfully if it existed.")
-    except Exception as e:
-        print(f"Error dropping database {database_name}: {e}")
-
-# Function to copy a database
-def copy_database(server, original_database_name, new_database_name, split_number):
-    """
-    Copies a database on the specified SQL Server instance by performing a backup and restore operation.
-    """
-    try:
-        print(f"Copying database: {original_database_name} to {new_database_name}")
-
-        # Drop the new database if it already exists and has an extension
-        drop_database_if_exists(server, new_database_name)
-
-        # Define paths for backup and new database files
-        backup_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\\MSSQL13.MSSQLSERVER\\MSSQL\\Backup\\{original_database_name}_{split_number}.bak"
-        data_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}.mdf"
-        log_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}_log.ldf"
-
-        # Backup the original database
-        backup_query = f"BACKUP DATABASE [{original_database_name}] TO DISK = '{backup_file}'"
-        execute_sql_command(server, backup_query)
-
-        # Restore the database with a new name
-        restore_query = (
-            f"RESTORE DATABASE [{new_database_name}] FROM DISK = '{backup_file}' "
-            f"WITH MOVE '{original_database_name}' TO '{data_file}', "
-            f"MOVE '{original_database_name}_log' TO '{log_file}'"
-        )
-        execute_sql_command(server, restore_query)
-
-        print(f"Database '{new_database_name}' created successfully.")
-        new_databases.append(new_database_name)
-
-    except Exception as e:
-        print("Error during database copy operation:", e)
-        
-# Function to count rows in the DataFrame
-def count_rows_in_dataframe(df):
-    return len(df)
-
-# Function to split and create databases
-def split_and_create_databases(df, server, original_database_name, locations_per_split):
-    """
-    Creates multiple database copies based on the number of rows in the DataFrame and the user-defined split size.
-    """
-    try:
-        total_rows = count_rows_in_dataframe(df)
-        print(f"Total rows in the dataset: {total_rows}")
-
-        # Determine the number of splits required
-        num_splits = (total_rows + locations_per_split - 1) // locations_per_split
-        print(f"Number of splits required: {num_splits}")
-
-        # Create the necessary database copies
-        for i in range(1, num_splits + 1):
-            new_database_name = f"{original_database_name}_{i}"
-            copy_database(server, original_database_name, new_database_name, i)
-
-        return new_databases
-
-    except Exception as e:
-        print("An error occurred while splitting and creating databases:", e)
-        return []
-
-# Main execution
-if __name__ == "__main__":
-    # User inputs and initial setup
-    try:
-        server = "localhost"
-        database_name = sample_database_name
-        locations_per_split = int(input("Enter the number of locations wanted in one split: "))
-        # Create database copies
-        created_databases = split_and_create_databases(df, server, database_name, locations_per_split)
-
-        # Print the results
-        print("Created Databases:", created_databases)
-
-    except ValueError:
-        print("Invalid input. Please enter numeric values for the split size.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
 
 
 # In[296]:
@@ -577,7 +578,7 @@ unspecified_column_behavior = {
             "USERBFE": "-999",
             "CREATEDATETIME": undate,
             "UPDATEDATETIME": undate,
-            "ACCGRPID": "1",
+            "ACCGRPID": accgrp_id,
             'OTHERZONE':currency,
             
         },
@@ -694,8 +695,6 @@ print("Data population completed in Property table.")
 # In[303]:
 
 
-import pyodbc
-import polars as pl
 
 # Class to manage SQL connection
 class SQLConnection:
@@ -891,8 +890,7 @@ sql_command
 # In[314]:
 
 
-import pyodbc
-import polars as pl
+
 
 # Class to manage SQL connection
 class SQLConnection:
