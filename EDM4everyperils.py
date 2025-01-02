@@ -8,7 +8,7 @@
 
 # 1 ) First Create a BLANK EDM in RISK LINK and import a sample MRI file according to the peril
 #2)Run the script
-# 3) Give the name of perilno, sample EDM in datbase and number of split needed
+# 3) Give the name of perilno, sample EDM in database and number of split needed
  
 
 # In[291]:
