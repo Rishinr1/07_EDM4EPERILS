@@ -384,7 +384,7 @@ unspecified_column_behavior = {
 }
 
 # Counter for AddressID
-address_id_counter = 4
+address_id_counter = 1
 
 # Assume df and created_databases are defined elsewhere
 # Split the DataFrame into chunks
@@ -585,9 +585,9 @@ unspecified_column_behavior = {
     },
 }
 
-address_id_counter = 4
-loc_id_counter = 4  # Initialize LOCID counter
-primary_id_counter = 4  # Initialize PRIMARYLOCID counter
+address_id_counter = 1
+loc_id_counter = 1  # Initialize LOCID counter
+primary_id_counter = 1  # Initialize PRIMARYLOCID counter
 
 # Split the DataFrame into chunks
 chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -784,8 +784,8 @@ unspecified_column_behavior = {
     },
 }
 
-loccvg_id_counter = 4
-#loc_id_counter_counter = 4
+loccvg_id_counter = 1
+#loc_id_counter_counter = 1
 
 
 chunks = [unpivoted_df[i:i + (locations_per_split*3)] for i in range(0, len(unpivoted_df), (locations_per_split*3))]
@@ -977,8 +977,8 @@ if perilno==1:
         },
     }
 
-    eqdet_counter = 4
-    loc_id_counter = 4  
+    eqdet_counter = 1
+    loc_id_counter = 1  
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -1087,8 +1087,8 @@ elif perilno==2:
         },
     }
 
-    hudet_counter = 4
-    loc_id_counter = 4  
+    hudet_counter = 1
+    loc_id_counter = 1  
 
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
@@ -1197,8 +1197,8 @@ elif perilno==3:
     }
 
     # Counter for AddressID, LOCID, and PRIMARYLOCID
-    todet_counter = 4
-    loc_id_counter = 4  # Initialize LOCID counter
+    todet_counter = 1
+    loc_id_counter = 1  # Initialize LOCID counter
 
     # Assume df and created_databases are defined elsewhere
     # Split the DataFrame into chunks
@@ -1313,8 +1313,8 @@ elif perilno == 4:
     }
 
     # Counter for AddressID, LOCID, and PRIMARYLOCID
-    fldet_counter = 4
-    loc_id_counter = 4  # Initialize LOCID counter
+    fldet_counter = 1
+    loc_id_counter = 1  # Initialize LOCID counter
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -1430,8 +1430,8 @@ elif perilno==5:
         },
     }
 
-    frdet_counter = 4
-    loc_id_counter = 4  
+    frdet_counter = 1
+    loc_id_counter = 1  
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
