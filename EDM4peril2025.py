@@ -8,7 +8,7 @@
 
 # 1 ) First Create a BLANK EDM in RISK LINK and import a sample MRI file according to the peril
 #2)Run the script
-# 3) Give the name of perilno, sample EDM in database and number of split needed
+# 3) Give the name of perilno, sample EDM in datbase and number of split needed
  
 
 # In[291]:
@@ -68,8 +68,8 @@ def copy_database(server, original_database_name, new_database_name, split_numbe
 
         # Define paths for backup and new database files
         backup_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\\MSSQL13.MSSQLSERVER\\MSSQL\\Backup\\{original_database_name}_{split_number}.bak"
-        data_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}.mdf"
-        log_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\DATA{new_database_name}_log.ldf"
+        data_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\{new_database_name}.mdf"
+        log_file = f"D:\\Program Files\\Microsoft SQL Server\\MSSQLSERVER\MSSQL13.MSSQLSERVER\MSSQL\\{new_database_name}_log.ldf"
 
         # Backup the original database
         backup_query = f"BACKUP DATABASE [{original_database_name}] TO DISK = '{backup_file}'"
@@ -384,7 +384,7 @@ unspecified_column_behavior = {
 }
 
 # Counter for AddressID
-address_id_counter = 1
+address_id_counter = 4
 
 # Assume df and created_databases are defined elsewhere
 # Split the DataFrame into chunks
@@ -585,9 +585,9 @@ unspecified_column_behavior = {
     },
 }
 
-address_id_counter = 1
-loc_id_counter = 1  # Initialize LOCID counter
-primary_id_counter = 1  # Initialize PRIMARYLOCID counter
+address_id_counter = 4
+loc_id_counter = 4  # Initialize LOCID counter
+primary_id_counter = 4  # Initialize PRIMARYLOCID counter
 
 # Split the DataFrame into chunks
 chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -784,7 +784,7 @@ unspecified_column_behavior = {
     },
 }
 
-loccvg_id_counter = 1
+loccvg_id_counter = 4
 #loc_id_counter_counter = 4
 
 
@@ -977,8 +977,8 @@ if perilno==1:
         },
     }
 
-    eqdet_counter = 1
-    loc_id_counter = 1  
+    eqdet_counter = 4
+    loc_id_counter = 4  
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -1087,8 +1087,8 @@ elif perilno==2:
         },
     }
 
-    hudet_counter = 1
-    loc_id_counter = 1  
+    hudet_counter = 4
+    loc_id_counter = 4  
 
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
 
@@ -1197,8 +1197,8 @@ elif perilno==3:
     }
 
     # Counter for AddressID, LOCID, and PRIMARYLOCID
-    todet_counter = 1
-    loc_id_counter = 1  # Initialize LOCID counter
+    todet_counter = 4
+    loc_id_counter = 4  # Initialize LOCID counter
 
     # Assume df and created_databases are defined elsewhere
     # Split the DataFrame into chunks
@@ -1313,8 +1313,8 @@ elif perilno == 4:
     }
 
     # Counter for AddressID, LOCID, and PRIMARYLOCID
-    fldet_counter = 1
-    loc_id_counter = 1  # Initialize LOCID counter
+    fldet_counter = 4
+    loc_id_counter = 4  # Initialize LOCID counter
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
@@ -1430,8 +1430,8 @@ elif perilno==5:
         },
     }
 
-    frdet_counter = 1
-    loc_id_counter = 1  
+    frdet_counter = 4
+    loc_id_counter = 4  
 
     # Split the DataFrame into chunks
     chunks = [df[i:i + locations_per_split] for i in range(0, len(df), locations_per_split)]
