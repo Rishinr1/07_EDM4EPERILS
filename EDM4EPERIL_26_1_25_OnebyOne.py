@@ -15,7 +15,6 @@ undate = "9999-12-31 00:00:00"
 Idate = "12/3/2024 12:00:00 AM"
 Edate = "12/2/2025 12:00:00 AM"
 sample_database_name = input ("Enter the name of sample database created using RL: ")
-LOCID_1=df['LOCNUM'][0]
 
 # Define the public variable
 perilno = None
@@ -39,75 +38,6 @@ if row:
 # Close the connection
 cursor.close()
 conn.close()
-
-if perilno==1:
-    # Prompt the user for EQCV1VAL, EQCV2VAL, and EQCV3VAL
-    EQCV1VAL = int(input("Enter the value for EQCV1VAL: "))
-    EQCV2VAL = int(input("Enter the value for EQCV2VAL: "))
-    EQCV3VAL = int(input("Enter the value for EQCV3VAL: "))
-    # Add the values to the DataFrame for all rows
-    df = df.with_columns([
-    pl.lit(EQCV1VAL).alias('EQCV1VAL'),
-    pl.lit(EQCV2VAL).alias('EQCV2VAL'),
-    pl.lit(EQCV3VAL).alias('EQCV3VAL')
-    ])
-elif perilno==2:
-    # Prompt the user for WSCV1VAL, WSCV2VAL, and WSCV3VAL
-    WSCV1VAL = int(input("Enter the value for WSCV1VAL: "))
-    WSCV2VAL = int(input("Enter the value for WSCV2VAL: "))
-    WSCV3VAL = int(input("Enter the value for WSCV3VAL: "))
-    # Add the values to the DataFrame for all rows
-    df = df.with_columns([
-    pl.lit(WSCV1VAL).alias('WSCV1VAL'),
-    pl.lit(WSCV2VAL).alias('WSCV2VAL'),
-    pl.lit(WSCV3VAL).alias('WSCV3VAL')
-    ])
-elif perilno==3:
-    # Prompt the user for TOCV1VAL, TOCV2VAL, and TOCV3VAL
-    TOCV1VAL = int(input("Enter the value for TOCV1VAL: "))
-    TOCV2VAL = int(input("Enter the value for TOCV2VAL: "))
-    TOCV3VAL = int(input("Enter the value for TOCV3VAL: "))
-    # Add the values to the DataFrame for all rows
-    df = df.with_columns([
-    pl.lit(TOCV1VAL).alias('TOCV1VAL'),
-    pl.lit(TOCV2VAL).alias('TOCV2VAL'),
-    pl.lit(TOCV3VAL).alias('TOCV3VAL')
-    ])
-
-elif perilno==4:
-    # Prompt the user for FLCV1VAL, FLCV2VAL, and FLCV3VAL
-    FLCV1VAL = int(input("Enter the value for FLCV1VAL: "))
-    FLCV2VAL = int(input("Enter the value for FLCV2VAL: "))
-    FLCV3VAL = int(input("Enter the value for FLCV3VAL: "))
-    # Add the values to the DataFrame for all rows
-    df = df.with_columns([
-    pl.lit(FLCV1VAL).alias('FLCV1VAL'),
-    pl.lit(FLCV2VAL).alias('FLCV2VAL'),
-    pl.lit(FLCV3VAL).alias('FLCV3VAL')
-    ])
-elif perilno==5:
-    # Prompt the user for FRCV1VAL, FRCV2VAL, and FRCV3VAL
-    FRCV1VAL = int(input("Enter the value for FRCV1VAL: "))
-    FRCV2VAL = int(input("Enter the value for FRCV2VAL: "))
-    FRCV3VAL = int(input("Enter the value for FRCV3VAL: "))
-    # Add the values to the DataFrame for all rows
-    df = df.with_columns([
-    pl.lit(FRCV1VAL).alias('FRCV1VAL'),
-    pl.lit(FRCV2VAL).alias('FRCV2VAL'),
-    pl.lit(FRCV3VAL).alias('FRCV3VAL')
-    ])
-else:
-    print("Unsupported perilno value")
-
-
-
-
-
-# # Prompt the user for EQCV1VAL, EQCV2VAL, and EQCV3VAL
-# EQCV1VAL = WSCV1VAL = TOCV1VAL = FLCV1VAL = FRCV1VAL = TRCV1VAL = int(input("Enter the value for EQCV1VAL: "))
-# EQCV2VAL = WSCV2VAL = TOCV2VAL = FLCV2VAL = FRCV2VAL = TRCV2VAL = int(input("Enter the value for EQCV2VAL: "))
-# EQCV3VAL = WSCV3VAL = TOCV3VAL = FLCV3VAL = FRCV3VAL = TRCV3VAL = int(input("Enter the value for EQCV3VAL: "))
-
 
 # Global list to store newly created database names
 new_databases = []
@@ -333,19 +263,8 @@ print(unpivoted_df)
 
 import pyodbc
 
-# Define the public variables
+# Define the public variable
 accgrp_id = None
-ACCNTNUM = None
-CNTRYCODE = None
-CNTRYSCHEME = None
-BLDGSCHEME = None
-BLDGCLASS = None
-OCCSCHEME = None
-OCCTYPE = 0
-NUMBLDGS = None
-NUMSTORIES = None
-YEARBUILT = None
-
 
 # Database connection parameters
 server = 'localhost'
@@ -356,83 +275,23 @@ connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};D
 conn = pyodbc.connect(connection_string)
 cursor = conn.cursor()
 
-# Query the accgrp table to get the ACCNTNUM
-cursor.execute("SELECT ACCGRPNAME,ACCGRPID FROM accgrp")
+# Query the accgrp table to get the ACCGRPID of the first row
+cursor.execute("SELECT ACCGRPID FROM accgrp")
 row = cursor.fetchone()
-if row:
-    ACCNTNUM = row.ACCGRPNAME
-    accgrp_id=row.ACCGRPID
 
-# Query the property table to get the required values
-cursor.execute("""
-    SELECT LOCNUM,BLDGSCHEME, BLDGCLASS, YEARBUILT, OCCSCHEME, NUMSTORIES,NUMBLDGS
-    FROM property
-""")
-row = cursor.fetchone()
+# Assign the value to the public variable
 if row:
-    
-    BLDGSCHEME = row.BLDGSCHEME
-    BLDGCLASS = row.BLDGCLASS
-    YEARBUILT = row.YEARBUILT
-    OCCSCHEME = row.OCCSCHEME
-    NUMSTORIES = row.NUMSTORIES
-    NUMBLDGS=row.NUMBLDGS
-
-# Query the Address table to get the CNTRYCODE and CNTRYSCHEME
-cursor.execute("SELECT CountryCode, CountryScheme FROM Address")
-row = cursor.fetchone()
-if row:
-    CNTRYCODE = row.CountryCode
-    CNTRYSCHEME = row.CountryScheme
+    accgrp_id = row.ACCGRPID
 
 # Close the connection
 cursor.close()
 conn.close()
 
-
-
-# Print the values (for verification)
-print(f"ACCNTNUM: {ACCNTNUM}")
-print(f"CNTRYCODE: {CNTRYCODE}")
-print(f"CNTRYSCHEME: {CNTRYSCHEME}")
-print(f"BLDGSCHEME: {BLDGSCHEME}")
-print(f"BLDGCLASS: {BLDGCLASS}")
-print(f"OCCSCHEME: {OCCSCHEME}")
-print(f"OCCTYPE: {OCCTYPE}")
-print(f"NUMSTORIES: {NUMSTORIES}")
-print(f"EQCV1VAL: {EQCV1VAL}")
-print(f"EQCV2VAL: {EQCV2VAL}")
-print(f"EQCV3VAL: {EQCV3VAL}")
-print(f"YEARBUILT: {YEARBUILT}")
-print(f"NUMBLDGS: {NUMBLDGS}")
-
-
 # Print the value (for verification)
 print(f"ACCGRPID: {accgrp_id}")
 
-# Add the values to the DataFrame for all rows
-df = df.with_columns([
-    pl.lit(ACCNTNUM).alias('ACCNTNUM'),
-    pl.lit(CNTRYCODE).alias('CNTRYCODE'),
-    pl.lit(CNTRYSCHEME).alias('CNTRYSCHEME'),
-    pl.lit(BLDGSCHEME).alias('BLDGSCHEME'),
-    pl.lit(BLDGCLASS).alias('BLDGCLASS'),
-    pl.lit(OCCSCHEME).alias('OCCSCHEME'),
-    pl.lit(NUMSTORIES).alias('NUMSTORIES'),
-    pl.lit(EQCV1VAL).alias('EQCV1VAL'),
-    pl.lit(EQCV2VAL).alias('EQCV2VAL'),
-    pl.lit(EQCV3VAL).alias('EQCV3VAL'),
-    pl.lit(YEARBUILT).alias('YEARBUILT'),
-    pl.lit(accgrp_id).alias('ACCGRPID'),
-    pl.lit(NUMBLDGS).alias('NUMBLDGS'),
-    pl.lit(OCCTYPE).alias('OCCTYPE')
-
-])
 
 
-
-
-address_id_counter = address_id_counter_2 = primary_id_counter_2 = loc_id_counter = loc_id_counter_2 = loc_id_counter_3 = loc_id_counter_4 = primary_id_counter = loccvg_id_counter = eqdet_counter = hudet_counter = todet_counter = fldet_counter = int(LOCID_1)
 
 
 ###########################555555555555555555#################5555########
@@ -614,21 +473,21 @@ unspecified_column_behavior = {
       
 }
 
-# address_id_counter = 1
-# address_id_counter_2 = 1
-# primary_id_counter_2=1
+address_id_counter = 1
+address_id_counter_2 = 1
+primary_id_counter_2=1
 
-# loc_id_counter = 1
-# loc_id_counter_2 = 1
-# loc_id_counter_3 = 1
-# loc_id_counter_4=1
+loc_id_counter = 1
+loc_id_counter_2 = 1
+loc_id_counter_3 = 1
+loc_id_counter_4=1
 
-# primary_id_counter = 1
-# loccvg_id_counter = 1
-# eqdet_counter = 1
-# hudet_counter = 1
-# todet_counter = 1
-# fldet_counter = 1
+primary_id_counter = 1
+loccvg_id_counter = 1
+eqdet_counter = 1
+hudet_counter = 1
+todet_counter = 1
+fldet_counter = 1
 
 
 # Split the DataFrame into chunks
@@ -1044,7 +903,7 @@ for i, database in enumerate(created_databases):
         else:
             print("Mismatch in columns and values, skipping row.")
             
-    print("Population completed in database:", database)
+print("Population completed in database:", database)
 
 
 
