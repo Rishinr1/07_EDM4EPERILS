@@ -808,7 +808,7 @@ for i, database in enumerate(created_databases):
         # Delete existing rows from the hudet table
         sql_conn.execute("DELETE FROM hudet")
 
-        for row in chunks.iter_rows(named=True):
+        for row in chunks[i].iter_rows(named=True):
             all_columns = get_table_columns(sql_conn.cursor, "hudet")
             foreign_key_columns = get_foreign_key_columns(sql_conn.cursor, "hudet")
 
@@ -864,7 +864,7 @@ for i, database in enumerate(created_databases):
         # Delete existing rows from the todet table
         sql_conn.execute("DELETE FROM todet")
 
-        for row in chunks.iter_rows(named=True):
+        for row in chunks[i].iter_rows(named=True):
             for table_name, column_mapping in table_mappings.items():
                 all_columns = get_table_columns(sql_conn.cursor, table_name)
                 foreign_key_columns = get_foreign_key_columns(sql_conn.cursor, table_name)
@@ -924,7 +924,7 @@ for i, database in enumerate(created_databases):
         # Delete existing rows from the fldet table
         sql_conn.execute("DELETE FROM fldet")
 
-        for row in chunks.iter_rows(named=True):
+        for row in chunks[i].iter_rows(named=True):
             for table_name, column_mapping in table_mappings.items():
                 all_columns = get_table_columns(sql_conn.cursor, table_name)
                 foreign_key_columns = get_foreign_key_columns(sql_conn.cursor, table_name)
